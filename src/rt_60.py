@@ -22,25 +22,30 @@ def extract_data(original_file):
             new_file_contents += line
     return new_file_contents
 
-def csv_transform(relative_path):
+def csv_transform(relative_path, i):
     #TODO: remove spaces from beginning of column headers
     current_path = os.path.dirname(__file__)
     file_path = os.path.relpath(relative_path, current_path)
     original_file = open(file_path, 'r')
     csv_data = extract_data(original_file)
+    csv_path = os.path.relpath("../csv/{}.csv".format(i), current_path)
+    csv = open(csv_path, 'w')
+    csv.write(csv_data)
+    csv.close()
     return csv_data
 
-def graph_data(x, y, csv_data, png_filename):
+def graph_data(x, y, csv_data, png_filename, i):
     df = pd.read_csv(StringIO(csv_data))
     x_values = df[x].values.tolist()
-    plot = df.plot.scatter(x = x, y = y, grid = True, logx = True, title = "Reverberation Time vs Frequency", xticks = x_values)
+    plot = df.plot.scatter(x = x, y = y, grid = True, logx = True, title = "Reverberation Time vs Frequency with {} People".format(i), xticks = x_values)
     plot.set_xticklabels(x_values)
     figure = plot.get_figure()
     figure.savefig(png_filename)
 
-def Main(relative_path, x, y, png_filename):
-    csv_data = csv_transform(relative_path)
-    graph_data(x, y, csv_data, png_filename)
+def Main(relative_path, x, y, png_filename, i):
+    csv_data = csv_transform(relative_path, i)
+    graph_data(x, y, csv_data, png_filename, i)
 
 if __name__ == "__main__":
-    Main("../data/RT60/0.txt", "freq Hz", " T20 s", "../images/0.png")
+    for i in range(0,4):
+        Main("../data/RT60/{}.txt".format(i), "freq Hz", " T20 s", "../images/{}.png".format(i), i)
